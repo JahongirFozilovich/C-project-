@@ -1,0 +1,150 @@
+DEFINE SIZE as 10
+
+DEFINE STRUCT Product
+    id: INTEGER
+    name: STRING (length 20)
+    price: FLOAT
+    stock: INTEGER
+END STRUCT
+
+DECLARE products as ARRAY of Product[SIZE]
+DECLARE role as INTEGER = 0
+
+FUNCTION main
+    CALL initializeProducts
+    CALL selectRole
+
+    IF role == 1 THEN
+        CALL customerMenu
+    ELSE IF role == 2 THEN
+        CALL shopkeeperMenu
+    ELSE
+        PRINT "Invalid role selected. Program exiting."
+    END IF
+END FUNCTION
+
+FUNCTION initializeProducts
+    INITIALIZE 10 predefined products with id, name, price, and stock
+END FUNCTION
+
+FUNCTION selectRole
+    PRINT "Select Role:"
+    PRINT "1. Customer"
+    PRINT "2. Shopkeeper"
+    INPUT role
+END FUNCTION
+
+FUNCTION customerMenu
+    DECLARE choice as INTEGER
+
+    WHILE TRUE
+        PRINT Customer Menu options:
+            1. View Products
+            2. Purchase Product
+            3. Exit
+        INPUT choice
+
+        SWITCH choice
+            CASE 1:
+                CALL displayProducts
+            CASE 2:
+                CALL purchaseProduct
+            CASE 3:
+                PRINT "Thank you for shopping with TOPSIDE"
+                RETURN
+            DEFAULT:
+                PRINT "Invalid choice. Try again"
+        END SWITCH
+    END WHILE
+END FUNCTION
+
+FUNCTION shopkeeperMenu
+    DECLARE choice as INTEGER
+
+    DO
+        PRINT Shopkeeper Menu options:
+            1. View Products
+            2. Restock Product
+            3. Exit
+        INPUT choice
+
+        IF choice == 1 THEN
+            CALL displayProducts
+        ELSE IF choice == 2 THEN
+            CALL restockProduct
+        ELSE IF choice == 3 THEN
+            PRINT "Goodbye, Shopkeeper!"
+        ELSE
+            PRINT "Invalid choice. Try again."
+        END IF
+    WHILE choice != 3
+END FUNCTION
+
+FUNCTION displayProducts
+    PRINT Table header: ID, Name, Price, Stock
+    FOR i from 0 to SIZE - 1
+        PRINT product[i]'s id, name, price, stock
+    END FOR
+END FUNCTION
+
+FUNCTION purchaseProduct
+    PRINT "Buy products by writing its ID and Quantity!!!"
+    
+    DECLARE p = 1, i = 0
+    DECLARE idList[10], quantityList[10]
+
+    WHILE p == 1
+        PRINT "Write ID and Quantity!"
+        INPUT idList[i], quantityList[i]
+
+        WHILE quantityList[i] > product[idList[i] - 1].stock OR quantityList[i] < 0
+            PRINT "Invalid quantity. Max value is product stock"
+            INPUT quantityList[i]
+        END WHILE
+
+        i = i + 1
+
+        PRINT "Do you want to buy something else? (1 for Yes, 2 for No)"
+        INPUT choice
+        IF choice != 1
+            BREAK
+    END WHILE
+
+    DECLARE sum = 0
+
+    FOR j from 0 to i - 1
+        sum = sum + (products[idList[j] - 1].price * quantityList[j])
+    END FOR
+
+    PRINT "Total amount: $" + sum
+    PRINT "Purchase successful!"
+
+    FOR j from 0 to i - 1
+        DECREASE products[idList[j] - 1].stock by quantityList[j]
+    END FOR
+END FUNCTION
+
+FUNCTION restockProduct
+    PRINT "Enter Product ID to restock"
+    INPUT id
+    SET found = 0
+
+    FOR i from 0 to SIZE - 1
+        IF products[i].id == id THEN
+            found = 1
+            PRINT "Enter quantity to add"
+            INPUT quantity
+            IF quantity > 0 THEN
+                INCREASE products[i].stock by quantity
+                PRINT "Restock done. New stock: " + products[i].stock
+            ELSE
+                PRINT "Invalid quantity"
+            END IF
+            BREAK
+        END IF
+    END FOR
+
+    IF found == 0 THEN
+        PRINT "Product not found"
+    END IF
+END FUNCTION
